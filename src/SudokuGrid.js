@@ -3,7 +3,7 @@
 import React from 'react';
 import './SudokuGrid.css';
 
-const SudokuGrid = ({ grid, onChange }) => {
+const SudokuGrid = ({ grid, onChange, initialGrid, invalidCells }) => {
   const handleInputChange = (row, col, value) => {
     if (value === '' || /^[1-9]$/.test(value)) {
       const newGrid = grid.map((r, rowIndex) =>
@@ -14,8 +14,22 @@ const SudokuGrid = ({ grid, onChange }) => {
           return cell;
         })
       );
-      onChange(newGrid);
+      onChange(newGrid, row, col, value);
     }
+  };
+
+  const getCellClassName = (row, col) => {
+    let className = '';
+    if ((row + 1) % 3 === 0 && row !== 8) {
+      className += ' bottom-border';
+    }
+    if ((col + 1) % 3 === 0 && col !== 8) {
+      className += ' right-border';
+    }
+    if (invalidCells[row][col]) {
+      className += ' invalid-cell';
+    }
+    return className.trim();
   };
 
   return (
@@ -25,13 +39,18 @@ const SudokuGrid = ({ grid, onChange }) => {
           {grid.map((row, rowIndex) => (
             <tr key={rowIndex}>
               {row.map((cell, colIndex) => (
-                <td key={colIndex}>
+                <td key={colIndex} className={getCellClassName(rowIndex, colIndex)}>
                   <input
                     type="text"
                     value={cell}
                     maxLength="1"
                     onChange={(e) => handleInputChange(rowIndex, colIndex, e.target.value)}
-                    style={{ width: '30px', textAlign: 'center' }}
+                    style={{
+                      width: '30px',
+                      textAlign: 'center',
+                      backgroundColor: initialGrid[rowIndex][colIndex] !== '' ? '#d3d3d3' : invalidCells[rowIndex][colIndex] ? 'red' : '#fff',
+                    }}
+                    disabled={initialGrid[rowIndex][colIndex] !== ''}
                   />
                 </td>
               ))}

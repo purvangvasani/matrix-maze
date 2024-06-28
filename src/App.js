@@ -1,67 +1,81 @@
 // src/App.js
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import SudokuGrid from './SudokuGrid';
+import { generateSudokuPuzzle } from './generator';
 import { solveSudoku } from './solver';
 
-const isValidSudokuInput = (grid) => {
-  const rows = Array(9).fill().map(() => new Set());
-  const cols = Array(9).fill().map(() => new Set());
-  const boxes = Array(9).fill().map(() => new Set());
+const App = () => {
+  const [grid, setGrid] = useState(generateSudokuPuzzle());
+  const [initialGrid, setInitialGrid] = useState(generateSudokuPuzzle());
+  const [invalidCells, setInvalidCells] = useState(Array(9).fill().map(() => Array(9).fill(false)));
+  const [error, setError] = useState('');
 
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      const value = grid[r][c];
-      if (value !== '') {
-        if (rows[r].has(value) || cols[c].has(value) || boxes[Math.floor(r / 3) * 3 + Math.floor(c / 3)].has(value)) {
-          return false;
-        }
-        rows[r].add(value);
-        cols[c].add(value);
-        boxes[Math.floor(r / 3) * 3 + Math.floor(c / 3)].add(value);
+  useEffect(() => {
+    const newPuzzle = generateSudokuPuzzle();
+    setGrid(newPuzzle);
+    setInitialGrid(newPuzzle);
+    setInvalidCells(Array(9).fill().map(() => Array(9).fill(false)));
+  }, []);
+
+  const validateCell = (grid, row, col, value) => {
+    for (let i = 0; i < 9; i++) {
+      if (i !== col && grid[row][i] === value) {
+        return false;
+      }
+      if (i !== row && grid[i][col] === value) {
+        return false;
       }
     }
-  }
-  return true;
-};
+    const startRow = 3 * Math.floor(row / 3);
+    const startCol = 3 * Math.floor(col / 3);
+    for (let i = startRow; i < startRow + 3; i++) {
+      for (let j = startCol; j < startCol + 3; j++) {
+        if ((i !== row || j !== col) && grid[i][j] === value) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
 
-const App = () => {
-  const initialGrid = Array(9).fill('').map(() => Array(9).fill(''));
-  const [grid, setGrid] = useState(initialGrid);
-  const [error, setError] = useState('');
+  const handleChange = (newGrid, row, col, value) => {
+    const isValid = value === '' || validateCell(newGrid, row, col, value);
+    // if (!isValid) {
+    //   alert('Invalid number!');
+    // }
+    const newInvalidCells = invalidCells.map((r, rowIndex) =>
+      r.map((cell, colIndex) => (rowIndex === row && colIndex === col ? !isValid : cell))
+    );
+    setGrid(newGrid);
+    setInvalidCells(newInvalidCells);
+  };
 
   const handleSolve = () => {
     setError('');
-    const filledCells = grid.flat().filter(cell => cell !== '').length;
-
-    if (filledCells < 17) {
-      setError('Please fill at least 17 cells.');
-      return;
-    }
-
-    if (!isValidSudokuInput(grid)) {
-      setError('Invalid Sudoku input.');
-      return;
-    }
-
     const solvedGrid = solveSudoku(grid);
     setGrid(solvedGrid);
   };
 
-  const handleReset = () => {
-    setGrid(initialGrid);
+  const handleGenerateNew = () => {
+    const newPuzzle = generateSudokuPuzzle();
+    setGrid(newPuzzle);
+    setInitialGrid(newPuzzle);
+    setInvalidCells(Array(9).fill().map(() => Array(9).fill(false)));
     setError('');
   };
 
   return (
-    <div className="App">
-      <h1 style={{color: 'teal'}}><b>Sudoku Solver</b></h1>
-      <SudokuGrid grid={grid} onChange={setGrid} />
-      {error && <p className="error">{error}</p>}
-      <button style={{border: '0.1rem solid', backgroundColor: 'green', color: 'white', borderColor: 'black' }} onClick={handleSolve}><b>Solve</b></button>
-      <button style={{border: '0.1rem solid', backgroundColor: 'red', color: 'white', borderColor: 'black' }} onClick={handleReset}><b>Reset</b></button>
-    </div>
+    <>
+      <div className="App">
+        <h1>Sudoku Solver</h1>
+        <SudokuGrid grid={grid} onChange={handleChange} initialGrid={initialGrid} invalidCells={invalidCells} />
+        {error && <p className="error">{error}</p>}
+        {/* <button onClick={handleSolve}>Solve</button> */}
+        <button onClick={handleGenerateNew}>Generate New Puzzle</button>
+      </div>
+    </>
   );
 };
 
