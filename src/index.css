@@ -16,7 +16,18 @@ ul {
   margin: 0px;
   padding: 0px;
 }
-
+.content-container {
+  min-height: calc(100vh - 75px);
+}
+.footer--pin {
+  position: relative;
+  left: 0;
+  bottom: 0;
+  .copyright-area {
+    background: #202020;
+    padding: 25px 0;
+  }
+}
 .footer-section {
   background: #151414;
   position: relative;
@@ -174,11 +185,6 @@ ul {
   color: #fff;
   font-size: 22px;
   transform: rotate(-6deg);
-}
-
-.copyright-area {
-  background: #202020;
-  padding: 25px 0;
 }
 
 .copyright-text p {

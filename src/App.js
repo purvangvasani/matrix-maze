@@ -69,11 +69,11 @@ const App = () => {
   return (
     <>
       <div className="App">
-        <h1>Sudoku Solver</h1>
+        <h1>Sudoku</h1>
         <SudokuGrid grid={grid} onChange={handleChange} initialGrid={initialGrid} invalidCells={invalidCells} />
         {error && <p className="error">{error}</p>}
         {/* <button onClick={handleSolve}>Solve</button> */}
-        <button onClick={handleGenerateNew}>Generate New Puzzle</button>
+        <button onClick={handleGenerateNew}>New Game</button>
       </div>
     </>
   );
